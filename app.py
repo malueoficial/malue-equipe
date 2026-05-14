@@ -18,16 +18,51 @@ import streamlit as st
 SHEET_ID = "13ibY4_88N7pTK2lrLkNcudGeVyh78Kry6Y60Ijp0JD4"
 CSV_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 LOGO_URL = "https://raw.githubusercontent.com/malueoficial/malue-contratos/main/malue_icon.png"
+ICON_URL = "https://raw.githubusercontent.com/malueoficial/malue-contratos/main/ml_agenda_icon.png"
 
 st.set_page_config(
     page_title="Agenda MaLuê — Equipe",
-    page_icon=LOGO_URL,
+    page_icon=ICON_URL,
     layout="centered",
 )
 
-# ============================================================
-# Brand CSS (preto + verde-limão, igual portfólio)
-# ============================================================
+# Injeta apple-touch-icon no top.document (página externa do Streamlit)
+import streamlit.components.v1 as _components
+_components.html(
+    f"""
+    <script>
+      const ICON = '{ICON_URL}';
+      function injetar() {{
+        try {{
+          const doc = (window.top && window.top.document) || document;
+          doc.querySelectorAll('link[rel*="apple-touch-icon"], link[rel="icon"], link[rel="shortcut icon"], link[rel="mask-icon"]').forEach(l => l.remove());
+          const tamanhos = ['180x180', '152x152', '144x144', '120x120', null];
+          for (const t of tamanhos) {{
+            const link = doc.createElement('link');
+            link.rel = 'apple-touch-icon';
+            link.href = ICON;
+            if (t) link.setAttribute('sizes', t);
+            doc.head.appendChild(link);
+          }}
+          const fav = doc.createElement('link');
+          fav.rel = 'icon';
+          fav.href = ICON;
+          doc.head.appendChild(fav);
+          const title = doc.createElement('meta');
+          title.setAttribute('name', 'apple-mobile-web-app-title');
+          title.setAttribute('content', 'Agenda Equipe');
+          doc.head.appendChild(title);
+        }} catch(e) {{ console.error('icon inject err:', e); }}
+      }}
+      injetar();
+      setTimeout(injetar, 500);
+      setTimeout(injetar, 2000);
+      setTimeout(injetar, 5000);
+    </script>
+    """,
+    height=0,
+)
+
 st.markdown(
     """
     <style>
@@ -60,22 +95,9 @@ st.markdown(
         margin: 0 auto 0.6rem;
         display: block;
       }
-      .header-title {
-        font-size: 2.2rem;
-        font-weight: 900;
-        color: var(--text);
-        line-height: 1;
-        margin: 0.3rem 0 0.2rem 0;
-      }
-      .header-sub {
-        color: var(--lime);
-        font-weight: 700;
-        font-size: 0.9rem;
-        letter-spacing: 1.2px;
-        text-transform: uppercase;
-      }
+      .header-title { font-size: 2.2rem; font-weight: 900; color: var(--text); line-height: 1; margin: 0.3rem 0 0.2rem 0; }
+      .header-sub { color: var(--lime); font-weight: 700; font-size: 0.9rem; letter-spacing: 1.2px; text-transform: uppercase; }
 
-      /* Filter tabs */
       .stRadio > div { flex-direction: row !important; justify-content: center; gap: 0.3rem; }
       .stRadio label {
         background: var(--card);
@@ -87,7 +109,6 @@ st.markdown(
       }
       .stRadio label:hover { border-color: var(--lime); }
 
-      /* Card */
       .show-card {
         background: var(--card);
         border: 1px solid #222;
@@ -109,33 +130,21 @@ st.markdown(
         font-weight: 900;
       }
       .date-day { font-size: 1.6rem; line-height: 1; display: block; }
-      .date-month {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        display: block;
-        margin-top: 0.15rem;
-      }
+      .date-month { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-top: 0.15rem; }
       .show-info { flex: 1; min-width: 0; }
-      .show-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: var(--text);
-        margin: 0;
-        word-break: break-word;
-      }
+      .show-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin: 0; word-break: break-word; }
       .show-meta { color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; }
       .show-time-badge {
-        background: rgba(200, 240, 50, 0.12);
+        background: rgba(200, 240, 50, 0.18);
         color: var(--lime);
-        padding: 0.2rem 0.5rem;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        margin-left: 0.3rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        margin-left: 0.4rem;
+        white-space: nowrap;
       }
 
-      /* Detalhes */
       .detalhe-bloco {
         background: var(--card);
         border-left: 3px solid var(--lime);
@@ -167,7 +176,6 @@ st.markdown(
       }
       .detalhe-empty { color: #555; font-style: italic; font-weight: 400; }
 
-      /* Status pills */
       .status-pill {
         display: inline-block;
         padding: 0.2rem 0.55rem;
@@ -207,9 +215,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ============================================================
-# Header
-# ============================================================
 st.markdown(
     f"""
     <div class="header-wrap">
@@ -221,9 +226,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ============================================================
-# Load data
-# ============================================================
 MESES_PT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
             "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
@@ -250,9 +252,6 @@ except Exception as e:
     st.caption(f"Detalhe técnico: {e}")
     st.stop()
 
-# ============================================================
-# Filtros
-# ============================================================
 filtro = st.radio(
     "Filtro",
     ["Próximos", "Esta semana", "Este mês", "Todos"],
@@ -310,16 +309,13 @@ def detalhe_row(label: str, value: str) -> str:
     )
 
 
-# ============================================================
-# Cards
-# ============================================================
 for idx, row in df_view.iterrows():
     d = row["_data_dt"]
     dia_num = d.day
     mes = MESES_PT[d.month - 1]
     dia_sem = row.get("Dia", "") or d.strftime("%A").capitalize()
     horario = row.get("Horário Show", "")
-    horario_badge = f"<span class='show-time-badge'>{horario}</span>" if horario else ""
+    horario_badge = f"<span class='show-time-badge'>🕐 {horario}</span>" if horario else ""
     local = row.get("Local", "") or "—"
     cidade = row.get("Cidade", "")
     cidade_str = f" · {cidade}" if cidade and cidade.lower() not in local.lower() else ""
@@ -360,9 +356,6 @@ for idx, row in df_view.iterrows():
             unsafe_allow_html=True,
         )
 
-# ============================================================
-# Footer
-# ============================================================
 st.markdown(
     "<div style='text-align:center;margin-top:2rem;color:#444;font-size:0.78rem;'>"
     "Atualizado automaticamente. Para forçar refresh:"
