@@ -63,6 +63,9 @@ _components.html(
     height=0,
 )
 
+# ============================================================
+# Brand CSS (preto + verde-limão, igual portfólio)
+# ============================================================
 st.markdown(
     """
     <style>
@@ -95,9 +98,22 @@ st.markdown(
         margin: 0 auto 0.6rem;
         display: block;
       }
-      .header-title { font-size: 2.2rem; font-weight: 900; color: var(--text); line-height: 1; margin: 0.3rem 0 0.2rem 0; }
-      .header-sub { color: var(--lime); font-weight: 700; font-size: 0.9rem; letter-spacing: 1.2px; text-transform: uppercase; }
+      .header-title {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--text);
+        line-height: 1;
+        margin: 0.3rem 0 0.2rem 0;
+      }
+      .header-sub {
+        color: var(--lime);
+        font-weight: 700;
+        font-size: 0.9rem;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+      }
 
+      /* Filter tabs */
       .stRadio > div { flex-direction: row !important; justify-content: center; gap: 0.3rem; }
       .stRadio label {
         background: var(--card);
@@ -109,6 +125,7 @@ st.markdown(
       }
       .stRadio label:hover { border-color: var(--lime); }
 
+      /* Card */
       .show-card {
         background: var(--card);
         border: 1px solid #222;
@@ -130,10 +147,23 @@ st.markdown(
         font-weight: 900;
       }
       .date-day { font-size: 1.6rem; line-height: 1; display: block; }
-      .date-month { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-top: 0.15rem; }
+      .date-month {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+        margin-top: 0.15rem;
+      }
       .show-info { flex: 1; min-width: 0; }
-      .show-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin: 0; word-break: break-word; }
+      .show-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+        word-break: break-word;
+      }
       .show-meta { color: var(--muted); font-size: 0.85rem; margin-top: 0.2rem; }
+      .show-meta-2 { color: var(--muted); font-size: 0.8rem; margin-top: 0.15rem; opacity: 0.85; }
       .show-time-badge {
         background: rgba(200, 240, 50, 0.18);
         color: var(--lime);
@@ -145,6 +175,7 @@ st.markdown(
         white-space: nowrap;
       }
 
+      /* Detalhes */
       .detalhe-bloco {
         background: var(--card);
         border-left: 3px solid var(--lime);
@@ -176,6 +207,7 @@ st.markdown(
       }
       .detalhe-empty { color: #555; font-style: italic; font-weight: 400; }
 
+      /* Status pills */
       .status-pill {
         display: inline-block;
         padding: 0.2rem 0.55rem;
@@ -215,6 +247,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ============================================================
+# Header
+# ============================================================
 st.markdown(
     f"""
     <div class="header-wrap">
@@ -226,6 +261,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ============================================================
+# Load data
+# ============================================================
 MESES_PT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
             "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
@@ -252,6 +290,9 @@ except Exception as e:
     st.caption(f"Detalhe técnico: {e}")
     st.stop()
 
+# ============================================================
+# Filtros
+# ============================================================
 filtro = st.radio(
     "Filtro",
     ["Próximos", "Esta semana", "Este mês", "Todos"],
@@ -309,6 +350,9 @@ def detalhe_row(label: str, value: str) -> str:
     )
 
 
+# ============================================================
+# Cards
+# ============================================================
 for idx, row in df_view.iterrows():
     d = row["_data_dt"]
     dia_num = d.day
@@ -318,8 +362,23 @@ for idx, row in df_view.iterrows():
     horario_badge = f"<span class='show-time-badge'>🕐 {horario}</span>" if horario else ""
     local = row.get("Local", "") or "—"
     cidade = row.get("Cidade", "")
-    cidade_str = f" · {cidade}" if cidade and cidade.lower() not in local.lower() else ""
+    contratante = row.get("Contratante", "")
+    tipo_evento = row.get("Tipo Evento", "")
     status_html = status_pill(row.get("Status", ""))
+
+    # Linha 1: dia da semana · tipo de show · status
+    parte1 = [p for p in [dia_sem, tipo_evento] if p]
+    meta1 = " · ".join(parte1)
+    if status_html:
+        meta1 = (meta1 + " " if meta1 else "") + status_html
+
+    # Linha 2: contratante · cidade (se cidade ≠ local)
+    cidade_show = cidade if cidade and cidade.lower() not in local.lower() else ""
+    parte2 = [p for p in [contratante, cidade_show] if p]
+    meta2_html = (
+        f"<div class='show-meta show-meta-2'>{' · '.join(parte2)}</div>"
+        if parte2 else ""
+    )
 
     st.markdown(
         f"""
@@ -330,7 +389,8 @@ for idx, row in df_view.iterrows():
           </div>
           <div class="show-info">
             <div class="show-title">{local}{horario_badge}</div>
-            <div class="show-meta">{dia_sem}{cidade_str} {status_html}</div>
+            <div class="show-meta">{meta1}</div>
+            {meta2_html}
           </div>
         </div>
         """,
@@ -356,6 +416,9 @@ for idx, row in df_view.iterrows():
             unsafe_allow_html=True,
         )
 
+# ============================================================
+# Footer
+# ============================================================
 st.markdown(
     "<div style='text-align:center;margin-top:2rem;color:#444;font-size:0.78rem;'>"
     "Atualizado automaticamente. Para forçar refresh:"
