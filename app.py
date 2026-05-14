@@ -232,7 +232,8 @@ MESES_PT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
 def carregar_agenda() -> pd.DataFrame:
     r = requests.get(CSV_URL, timeout=10)
     r.raise_for_status()
-    df = pd.read_csv(io.StringIO(r.text), dtype=str).fillna("")
+    r.encoding = "utf-8"
+    df = pd.read_csv(io.BytesIO(r.content), dtype=str, encoding="utf-8").fillna("")
     df.columns = [c.strip() for c in df.columns]
     df["_data_dt"] = pd.to_datetime(df["Data"], format="%d/%m/%Y", errors="coerce")
     df = df.dropna(subset=["_data_dt"])
@@ -321,7 +322,7 @@ for idx, row in df_view.iterrows():
     horario_badge = f"<span class='show-time-badge'>{horario}</span>" if horario else ""
     local = row.get("Local", "") or "—"
     cidade = row.get("Cidade", "")
-    cidade_str = f" · {cidade}" if cidade else ""
+    cidade_str = f" · {cidade}" if cidade and cidade.lower() not in local.lower() else ""
     status_html = status_pill(row.get("Status", ""))
 
     st.markdown(
